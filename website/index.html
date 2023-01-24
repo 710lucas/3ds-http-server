@@ -1,0 +1,45 @@
+<html data-theme="light">
+    <head>
+        <title>Luxs website!</title>
+        <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    </head>
+
+    <body>
+        <main class="container">
+            <h3>Hi and welcome to my website!</h3>
+            <p>I'm lux and this shit is running on a fucking 3ds, don't judge me, it's a free hosting option</p>
+            <p>Don't know wtf i'm going to do with this but yeah, i hope this is running</p>
+            <hr>
+            <p>Javascript test session</p>
+            <h1 style="visibility: hidden; color: green;" id="thanks">Thanks, you just saved the entire world!</h1>
+            <a href="#" onclick="alert('fuck you')">click me!</a>
+            <a href="#" onclick="fuck_elon_musk()">don't click me</a>
+            <div id="elon_mosca" style="visibility: hidden;">
+                <a href="#" onclick="kill()">Click me to kill this mf</a>
+                <img src="https://pbs.twimg.com/media/FURPVIrWUBsQf-v.png" style="display:block;" id="elon_img">
+                <img src="https://http2.mlstatic.com/D_NQ_NP_866417-MLB32210708674_092019-O.jpg" style=" visibility: hidden; transform: rotate(90deg);" id="kill">
+                <br>
+            </div>
+            <script>
+                function fuck_elon_musk(){
+                    document.getElementById("elon_mosca").style.visibility="visible";
+                }
+                function kill(){
+                    document.getElementById("kill").style.visibility="visible";
+                    var run = setInterval(()=>{
+                        
+                        document.getElementById("elon_img").height -=10;
+                        document.getElementById("elon_img").width  -= 10;
+                        if(document.getElementById("elon_img").height <= 10){
+                            document.getElementById("thanks").style.visibility="visible";
+                            clearInterval(run)
+                        }
+                    }, 100)
+                }
+            </script>
+
+            
+        </main>
+
+    </body>
+</html>

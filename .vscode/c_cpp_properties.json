@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            // "includePath": [
+            //     "${workspaceFolder}/**"
+            // ],
+            // "defines": [],
+            // "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64",
+
+
+        "includePath": [
+            "${workspaceFolder}/**",
+            // "/opt/devkitpro/libnds/include/**",
+            "/opt/devkitpro/libctru/include/**",
+            "/opt/devkitpro/devkitARM/include/**",
+            "/opt/devkitpro/devkitARM/arm-none-eabi/include/**"
+        ],
+        "defines": [
+            "ARM9"
+        ],
+        "compilerPath": "/opt/devkitpro/devkitARM/bin/arm-none-eabi-gcc",
+        // "intelliSenseMode": "macos-gcc-x64"
+
+
+        }
+    ],
+    "version": 4
+}
