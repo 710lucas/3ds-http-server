@@ -1,4 +1,5 @@
 #include "http_3ds_lib.h"
+#include "request_parser.h"
 
 void socShutdown(){
 //---------------------------------------------------------------------------------
@@ -92,6 +93,15 @@ bool http_post(char request_page[1026], std::string page){
     return !strncmp( request_page, page_complete.c_str(), strlen(page_complete.c_str()) ) ;
 }
 
+bool http_get_from_list(std::string request_page){
+	std::string page = get_middle_term(request_page);
+	std::cout<<"Middle term: "<<page<<"\n";
+	if(get_page_file(page) != "NULL"){
+		return true;
+	}
+	return false;
+}
+
 void send_default(int code, std::string content_type, signed int csock){
     std::string http_code, http_content_type;
     if(code == 200){
@@ -100,4 +110,78 @@ void send_default(int code, std::string content_type, signed int csock){
     http_content_type = "Content-type: "+content_type+"\r\n\r\n";
     send(csock, http_code.c_str(), strlen(http_code.c_str()), 0);
     send(csock, http_content_type.c_str(), strlen(http_content_type.c_str()), 0);
+}
+
+
+const char* readfile(std::string filename){
+	char* ch;
+	std::fstream file(filename);
+	if(file.fail()){
+		printf("falhou\n\n\n\n");
+	}
+	std::string str((std::istreambuf_iterator<char>(file)),
+                 std::istreambuf_iterator<char>());
+	std::cout<<str;
+	return str.c_str();
+}
+
+std::string get_page_file(std::string page){
+
+        std::fstream file("./website/data.txt");
+        std::string page_file = "NULL";
+        std::string page_url = "NULL";
+        while(file>>page_url>>page_file and page_url != page){
+                std::cout<<"\nPage URL: "<<page_url;
+                std::cout<<"\nPage File: "<<page_file<<"\n";
+        }
+        if(page_url != page){
+                return "NULL";
+        }
+        return page_file;
+
+}
+
+std::string get_middle_term(std::string request_page){
+	int espacos = 0;
+	std::string page = "";
+
+	for(int i = 0; i<request_page.length(); i++){
+		if(request_page[i] == ' ')
+			espacos++;
+		else if(espacos == 1){
+			page += request_page[i];
+		}
+
+	}
+
+	return page;
+}
+
+// std::vector<std::string[2]> get_all_pages(){
+
+//         std::fstream file("./website/data.txt");
+//         std::string page_file = "NULL";
+//         std::string page_url = "NULL";
+// 		std::vector<std::string[2]> pages;
+//         while(file>>page_url>>page_file){
+//                 std::cout<<"\nPage URL: "<<page_url;
+//                 std::cout<<"\nPage File: "<<page_file<<"\n";
+// 				pages.push_back({page_url, page_file});
+//         }
+
+// 		return pages;
+
+// }
+
+std::string get_data_file(){
+
+	std::ifstream file("./website/data.txt");
+	std::string data((std::istreambuf_iterator<char>(file)),std::istreambuf_iterator<char>());
+
+	return data;
+	
+}
+
+void add_new_page(std::string request){
+	std::string filename;
 }

@@ -1,0 +1,12 @@
+<html>
+    <h1>Upload your file!</h1>
+    <p>When you upload your file, the filename will be the same name that's on the file that you've uploaded</p>
+    <p>After uploading the file, go to <a href="/get-pages">get-pages</a> and add a reference to your file and the filename</p>
+    <p>Example: You've uploaded the file named "test.html", so you add "/test_file test.html" in the last line</p>
+    <form action="/add_page" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="submit">
+    </form>
+
+</html>
+Very important line for testing

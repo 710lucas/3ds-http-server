@@ -18,18 +18,8 @@
 
 #include <3ds.h>
 #include "http_3ds_lib.h"
+#include "request_parser.h"
 
-const char* readfile(std::string filename){
-	char* ch;
-	std::fstream file(filename);
-	if(file.fail()){
-		printf("falhou");
-	}
-	std::string str((std::istreambuf_iterator<char>(file)),
-                 std::istreambuf_iterator<char>());
-	std::cout<<str;
-	return str.c_str();
-}
 
 //---------------------------------------------------------------------------------
 int main(int argc, char **argv) {
@@ -64,9 +54,9 @@ int main(int argc, char **argv) {
 			// set client socket to blocking to simplify sending data back
 			fcntl(server.csock, F_SETFL, fcntl(server.csock, F_GETFL, 0) & ~O_NONBLOCK);
 			printf("Connecting port %d from %s\n", server.client.sin_port, inet_ntoa(server.client.sin_addr));
-			memset (server.temp, 0, 1026);
+			memset (server.temp, 0, 4096);//1026
 
-			server.ret = recv (server.csock, server.temp, 1024, 0);
+			server.ret = recv (server.csock, server.temp, 4096, 0);//1024
 
 			// ========================================
 			// put your pages here!
@@ -87,6 +77,73 @@ int main(int argc, char **argv) {
 				send(server.csock, server.temp, strlen(server.temp), 0);
 			}
 
+			else if(http_get(server.temp, "/get-pages")){
+				send_default(200, "text/html", server.csock);
+				std::string file_data = get_data_file();
+				std::string editor_page = "<html><form action='/edit_page' method='POST'><textarea name='value'>"+file_data+"</textarea><input type='submit' value='submit'></form></html>";
+				send(server.csock, editor_page.c_str(), strlen(editor_page.c_str()), 0);
+			}
+
+			else if(http_post(server.temp, "/edit_page")){
+				send_default(200, "text/html", server.csock);
+
+				BodyParser bp(server.temp);
+				std::string value = bp.get_value("value");
+				std::cout<<"Value: "<<value;
+				std::string right_value="";
+				for(int i = 6; i<value.length(); i++){
+					if(value[i-2] == '%' and value[i-1] == '2' and value[i] == 'F'){
+						right_value+="/";
+						right_value[i-1-6]=' ';
+						right_value[i-2-6]=' ';
+					}
+					else if(value[i-2] == '%' and value[i-1] == '0' and value[i] == 'A'){
+						right_value+="\n";
+						right_value[i-1-6]=' ';
+						right_value[i-2-6]=' ';
+					}
+					else if(value[i] == '+'){
+						right_value += " ";
+					}
+					else if(value[i-2]=='%' and value[i-1] == '0' and value[i] == 'D'){
+						right_value += ' ';
+						right_value[i-1-6]=' ';
+						right_value[i-2-6]=' ';
+					}
+					else
+						right_value += value[i];
+				}
+				std::ofstream file("./website/data.txt", std::ios::trunc);
+				std::cout<<"File: "<<right_value<<"\n";
+				file<<right_value;
+				send(server.csock, "Edited with success!", strlen("Edited with success!"), 0);
+				file.close();
+			}
+
+			else if(http_post(server.temp, "/add_page")){
+				send_default(200, "text/html", server.csock);
+
+				BodyParser bp(server.temp);
+
+				std::string filename = bp.get_multipart_fd_filename(server.temp);
+
+				std::ofstream file("./website/"+filename, std::ofstream::out);
+
+				std::string content = bp.get_multipart_body(server.temp);
+
+				send(server.csock, server.temp, strlen(server.temp), 0);
+
+				file<<content;
+
+				file.close();
+			}
+
+			else if(http_get_from_list(server.temp)){
+				std::cout<<"Getting from list";
+				send_default(200, "text/html", server.csock);
+				const char* page = readfile("./website/"+get_page_file(get_middle_term(server.temp)));
+				send(server.csock, page, strlen(page), 0);
+			}
 
 			//End of pages section
 			//=====================================
