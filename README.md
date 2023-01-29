@@ -29,3 +29,5 @@ For now, we have the following features:
 - adding a password to the get-pages and upload_page pages (i need to find a way of naming things omg)
 
 - adding redirect response or whatever this thing is called
+
+- oh yeah, i need to make a tutorial also (and i need to remember to update this shit)
