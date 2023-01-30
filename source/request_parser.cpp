@@ -44,7 +44,7 @@ std::string BodyParser::get_value(std::string name){
 
     std::string value = "";
 
-    for(int i = position; i<body.length(); i++){
+    for(int i = position+name.length()+1; i<body.length(); i++){
         if(body[i] != '&' and body[i] != ' ' ){
             value+=body[i];
         }
