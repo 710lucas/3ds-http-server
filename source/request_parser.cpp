@@ -146,3 +146,34 @@ std::string BodyParser::get_multipart_body(std::string request){
     //fuck this code, that shit is so bad
 
 }
+
+std::string BodyParser::remove_string_codes(std::string value){
+
+    std::string right_value="";
+
+    for(int i = 6; i<value.length(); i++){
+        if(value[i-2] == '%' and value[i-1] == '2' and value[i] == 'F'){
+            right_value+="/";
+            right_value[i-1-6]=' ';
+            right_value[i-2-6]=' ';
+        }
+        else if(value[i-2] == '%' and value[i-1] == '0' and value[i] == 'A'){
+            right_value+="\n";
+            right_value[i-1-6]=' ';
+            right_value[i-2-6]=' ';
+        }
+        else if(value[i] == '+'){
+            right_value += " ";
+        }
+        else if(value[i-2]=='%' and value[i-1] == '0' and value[i] == 'D'){
+            right_value += ' ';
+            right_value[i-1-6]=' ';
+            right_value[i-2-6]=' ';
+        }
+        else
+            right_value += value[i];
+    }
+
+    return right_value;
+
+}
