@@ -106,8 +106,13 @@ void send_default(int code, std::string content_type, signed int csock){
     std::string http_code, http_content_type;
     if(code == 200){
         http_code = "HTTP/1.1 200 OK\r\n";
+		http_content_type = "Content-type: "+content_type+"\r\n\r\n";
     }
-    http_content_type = "Content-type: "+content_type+"\r\n\r\n";
+	else if(code == 302){
+		http_code = "HTTP/1.1 302 Found\r\n";
+		http_content_type = "Location: "+content_type+"\r\n\r\n";
+
+	}
     send(csock, http_code.c_str(), strlen(http_code.c_str()), 0);
     send(csock, http_content_type.c_str(), strlen(http_content_type.c_str()), 0);
 }

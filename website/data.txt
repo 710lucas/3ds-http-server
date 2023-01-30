@@ -1,4 +1,3 @@
 /index index.html 
 /get-started getting_started.html
 /hello-world hello_world.html
-/upload_page upload_page.html

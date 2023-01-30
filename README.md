@@ -24,10 +24,10 @@ For now, we have the following features:
 
 ## Things to do
 
-- URGENT: make the code for the get-pages and upload_page readable (that shit is awful, and also find out a consitent way of naming important website files)
+- improve password thing
 
-- adding a password to the get-pages and upload_page pages (i need to find a way of naming things omg)
-
-- adding redirect response or whatever this thing is called
+- adding redirect response or whatever this thing is called (added only 302, it still needs more redirect things idk)
 
 - oh yeah, i need to make a tutorial also (and i need to remember to update this shit)
+
+- cookies

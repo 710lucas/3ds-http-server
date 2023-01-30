@@ -6,6 +6,8 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <iostream>
+#include <vector>
+#include <algorithm>
 #include <fstream>
 
 #include <fcntl.h>
@@ -20,10 +22,17 @@
 #include "http_3ds_lib.h"
 #include "request_parser.h"
 
+template <typename T> bool vector_contains_value(std::vector<T> valid_ips, T ip){
+	return std::find(valid_ips.begin(), valid_ips.end(), ip) != valid_ips.end();
+}
+
 
 //---------------------------------------------------------------------------------
 int main(int argc, char **argv) {
 //---------------------------------------------------------------------------------
+
+
+	//init functions
 
 	gfxInitDefault();
 	atexit(gfxExit);
@@ -37,6 +46,16 @@ int main(int argc, char **argv) {
 	server.clientlen = sizeof(server.client);
 	server.initSock();
 
+	std::string server_password;
+	std::fstream password_file("./website/password.txt");
+	while(password_file >> server_password){
+		;
+	}
+
+	std::vector<std::string> valid_ips;
+
+
+	//server loop
 	while (aptMainLoop()) {
 
 		gspWaitForVBlank();
@@ -56,11 +75,16 @@ int main(int argc, char **argv) {
 			printf("Connecting port %d from %s\n", server.client.sin_port, inet_ntoa(server.client.sin_addr));
 			memset (server.temp, 0, 4096);//1026
 
+			std::string ip = inet_ntoa(server.client.sin_addr);
+
 			server.ret = recv (server.csock, server.temp, 4096, 0);//1024
 
 			// ========================================
 			// put your pages here!
 
+
+			//http_get(server.temp, "/") will return the "./website/index.html" file if the 
+			//requested url by the browser is "/" with the method GET
 			if(http_get(server.temp, "/")){
 				send_default(200, "text/html", server.csock);
 				const char* page = readfile("./website/index.html");
@@ -78,73 +102,128 @@ int main(int argc, char **argv) {
 			}
 
 			else if(http_get(server.temp, "/get-pages")){
-				send_default(200, "text/html", server.csock);
-				std::string file_data = get_data_file();
-				std::string editor_page = "<html><form action='/edit_page' method='POST'><textarea name='value'>"+file_data+"</textarea><input type='submit' value='submit'></form></html>";
-				send(server.csock, editor_page.c_str(), strlen(editor_page.c_str()), 0);
+
+				if(vector_contains_value(valid_ips, ip)){
+					send_default(200, "text/html", server.csock);
+					std::string file_data = get_data_file();
+					// std::string editor_page = "<html><form action='/edit_page' method='POST'><textarea name='value'>"+file_data+"</textarea><input type='submit' value='submit'></form></html>";
+					std::string editor_page = "<html>"
+					"<h2>Editor's page</h2>"
+					"<p>To edit the page that your server has, you need to put the desider url to the page and the page file (inside the /website folder)</p>"
+					"<p>Example: /test test.html</p>"
+					"<p>When the person types /test, they will receive as response the test.html file</p>"
+					"<p>And each page should occupy just one line of the textarea</p>"
+					"<form action='/edit_page' method='POST'>"
+					"<textarea name='value'>"+file_data+"</textarea>"
+					"<br>"
+					"<input type='submit' value='submit'>"
+					"</form>"
+					"</html>"
+					"";
+					send(server.csock, editor_page.c_str(), strlen(editor_page.c_str()), 0);
+				}
+				else{
+					send_default(302, "/login", server.csock);
+				}
+
 			}
 
 			else if(http_post(server.temp, "/edit_page")){
-				send_default(200, "text/html", server.csock);
 
-				BodyParser bp(server.temp);
-				std::string value = bp.get_value("value");
-				std::cout<<"Value: "<<value;
-				std::string right_value="";
-				for(int i = 6; i<value.length(); i++){
-					if(value[i-2] == '%' and value[i-1] == '2' and value[i] == 'F'){
-						right_value+="/";
-						right_value[i-1-6]=' ';
-						right_value[i-2-6]=' ';
-					}
-					else if(value[i-2] == '%' and value[i-1] == '0' and value[i] == 'A'){
-						right_value+="\n";
-						right_value[i-1-6]=' ';
-						right_value[i-2-6]=' ';
-					}
-					else if(value[i] == '+'){
-						right_value += " ";
-					}
-					else if(value[i-2]=='%' and value[i-1] == '0' and value[i] == 'D'){
-						right_value += ' ';
-						right_value[i-1-6]=' ';
-						right_value[i-2-6]=' ';
-					}
-					else
-						right_value += value[i];
+				if(vector_contains_value(valid_ips, ip)){
+					send_default(200, "text/html", server.csock);
+
+					BodyParser bp(server.temp);
+
+					std::string value = bp.get_value("value");
+					std::string right_value= bp.remove_string_codes(value);
+
+					std::ofstream file("./website/data.txt", std::ios::trunc);
+					file<<right_value;
+					file.close();
+
+					send(server.csock, "Edited with success!", strlen("Edited with success!"), 0);
 				}
-				std::ofstream file("./website/data.txt", std::ios::trunc);
-				std::cout<<"File: "<<right_value<<"\n";
-				file<<right_value;
-				send(server.csock, "Edited with success!", strlen("Edited with success!"), 0);
-				file.close();
+				else{
+					send_default(302, "/login", server.csock);
+				}
+
+			}
+
+			else if(http_post(server.temp, "/upload_page")){
+				if(vector_contains_value(valid_ips, ip)){
+					send_default(200, "text/html", server.csock);
+					const char* page = readfile("./website/upload_page.html");
+					send(server.csock, page, strlen(page), 0);
+				}
+				else{
+					send_default(302, "/login", server.csock);
+				}
 			}
 
 			else if(http_post(server.temp, "/add_page")){
-				send_default(200, "text/html", server.csock);
 
-				BodyParser bp(server.temp);
+				if(vector_contains_value(valid_ips, ip)){
+					send_default(200, "text/html", server.csock);
 
-				std::string filename = bp.get_multipart_fd_filename(server.temp);
+					BodyParser bp(server.temp);
 
-				std::ofstream file("./website/"+filename, std::ofstream::out);
+					std::string filename = bp.get_multipart_fd_filename(server.temp);
 
-				std::string content = bp.get_multipart_body(server.temp);
+					std::ofstream file("./website/"+filename, std::ofstream::out);
 
-				send(server.csock, server.temp, strlen(server.temp), 0);
+					std::string content = bp.get_multipart_body(server.temp);
 
-				file<<content;
+					file<<content;
+					file.close();
 
-				file.close();
+					send(server.csock, server.temp, strlen(server.temp), 0);
+				}
+				else{
+					send_default(302, "/login", server.csock);
+				}
+
 			}
 
-			else if(http_get_from_list(server.temp)){
+			else if(http_get(server.temp, "/login")){
+				send_default(200, "text/html", server.csock);
+				std::string login_page = ""
+				"<form action='/login' method='POST'>"
+				"<input type='password' name='password' placeholder='password'>"
+				"<input type='submit' value='submit'>"
+				"</form>"
+				"";
+				send(server.csock, login_page.c_str(), strlen(login_page.c_str()), 0);
+			}
+
+			else if(http_post(server.temp, "/login")){
+				send_default(200, "text/html", server.csock);
+				BodyParser bp(server.temp);
+				std::string resp="";
+
+				std::string password = bp.get_value("password");
+
+				std::cout<<"Server_password: "<<server_password<<"\n";
+				std::cout<<"Password: "<<password<<"\n";
+
+				if(password == server_password){
+					resp = "Logged in!";
+					valid_ips.push_back(ip);
+				}
+				else
+					std::string resp = "wrong password";
+
+				send(server.csock, resp.c_str(), strlen(resp.c_str()), 0);
+
+
+			}
+
+			else if(http_get_from_list(server.temp)){ //Still WIP
 				std::cout<<"Getting from list";
 				send_default(200, "text/html", server.csock);
 				const char* page = readfile("./website/"+get_page_file(get_middle_term(server.temp)));
 				send(server.csock, page, strlen(page), 0);
 			}
-
 			//End of pages section
 			//=====================================
 
