@@ -21,6 +21,8 @@
 #include <3ds.h>
 #include "http_3ds_lib.h"
 #include "request_parser.h"
+#include "database.h"
+#include "hashing.h"
 
 template <typename T> bool vector_contains_value(std::vector<T> valid_ips, T ip){
 	return std::find(valid_ips.begin(), valid_ips.end(), ip) != valid_ips.end();
@@ -185,10 +187,10 @@ int main(int argc, char **argv) {
 
 			}
 
-			else if(http_get(server.temp, "/login")){
+			else if(http_get(server.temp, "/login_add_page")){
 				send_default(200, "text/html", server.csock);
 				std::string login_page = ""
-				"<form action='/login' method='POST'>"
+				"<form action='/login_add_page' method='POST'>"
 				"<input type='password' name='password' placeholder='password'>"
 				"<input type='submit' value='submit'>"
 				"</form>"
@@ -196,7 +198,7 @@ int main(int argc, char **argv) {
 				send(server.csock, login_page.c_str(), strlen(login_page.c_str()), 0);
 			}
 
-			else if(http_post(server.temp, "/login")){
+			else if(http_post(server.temp, "/login_add_page")){
 				send_default(200, "text/html", server.csock);
 				BodyParser bp(server.temp);
 				std::string resp="";

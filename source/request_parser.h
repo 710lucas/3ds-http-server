@@ -14,7 +14,10 @@ class BodyParser{
         std::string get_multipart_body(std::string input);
         std::string remove_string_codes(std::string value);
 
+        std::string get_cookie(std::string cookie_name);
+
     private:
         std::string body="";
+        std::string request;
 
 };

@@ -1,7 +1,8 @@
 #include "request_parser.h"
 
 
-BodyParser::BodyParser(std::string request){
+BodyParser::BodyParser(std::string request_){
+    request = request_;
     get_body(request);
 }
 
@@ -176,4 +177,24 @@ std::string BodyParser::remove_string_codes(std::string value){
 
     return right_value;
 
+}
+
+
+std::string BodyParser::get_cookie(std::string cookie_name){
+    size_t pos = request.find("Cookie: ");
+
+    std::string cookies = "";
+
+    int white_spaces = 0;
+
+    for(int i = pos+(std::string("Cookie: ").size()); i<cookie_name.size(); i++){
+
+        if(request[i] == ' ')
+            white_spaces++;
+
+        if(white_spaces == 1)
+            cookies+=request[i];
+    }
+
+    return cookies;
 }
