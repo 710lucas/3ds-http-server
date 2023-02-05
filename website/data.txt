@@ -1,3 +1,5 @@
 /index index.html 
 /get-started getting_started.html
 /hello-world hello_world.html
+/login_user login_user.html
+/register_user register.html

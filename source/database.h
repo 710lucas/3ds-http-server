@@ -4,6 +4,9 @@
 #include <fstream>
 #include <vector>
 
+//CRIAR FUNCAO DE APAGAR COISA DA DB
+
+
 class Database{
 
     public:
@@ -17,7 +20,7 @@ class Database{
 
         std::string get_item_in_position(std::string db_name, int position);
 
-        bool compares_to_database(std::string db_name, std::string value);
+        bool exists_in_database(std::string db_name, std::string value);
 
         bool file_exists(std::string filename);
 

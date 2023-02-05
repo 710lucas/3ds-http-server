@@ -147,13 +147,15 @@ std::string get_page_file(std::string page){
 }
 
 std::string get_middle_term(std::string request_page){
-	int espacos = 0;
+	int espacos = 0, interrogacoes = 0;
 	std::string page = "";
 
 	for(int i = 0; i<request_page.length(); i++){
 		if(request_page[i] == ' ')
 			espacos++;
-		else if(espacos == 1){
+		else if(request_page[i] == '?')
+			interrogacoes++;
+		else if(espacos == 1 and interrogacoes == 0){
 			page += request_page[i];
 		}
 

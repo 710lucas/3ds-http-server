@@ -2,7 +2,7 @@
 
 namespace simple_hash{
 
-
+    
     std::string hash_string(std::string inp){
 
         for(int i = 0; i<inp.length(); i++){

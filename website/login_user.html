@@ -1,0 +1,13 @@
+
+<h1 style="color: red;" id="msg"></h1>
+
+<form action="/login_user" method="POST">
+    <input type="text" name="username" placeholder="username">
+    <input type="password" name="password" placeholder="password">
+    <input type="submit" value="register">
+</form>
+
+<script defer>
+    const params = new URLSearchParams("msg")
+    document.getElementById("msg").innerText = params
+</script>
