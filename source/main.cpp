@@ -268,6 +268,22 @@ int main(int argc, char **argv) {
 
 			}
 
+			else if(http_get(server.temp, "/get-cookies")){
+				send_default(200, "text/html", server.csock);
+				BodyParser bp(server.temp);
+				std::cout<<"girafa";
+				std::string cookies = bp.get_cookies();
+				std::cout<<"girafa";
+				send(server.csock, cookies.c_str(), strlen(cookies.c_str()), 0);
+			}
+
+			else if(http_get(server.temp, "/get-cookie-name")){
+				send_default(200, "text/html", server.csock);
+				BodyParser bp(server.temp);
+				std::string cookies = bp.get_cookie_value("name");
+				send(server.csock, cookies.c_str(), strlen(cookies.c_str()), 0);
+			}
+
 
 			else if(http_get_from_list(server.temp)){ //Still WIP
 				std::cout<<"Getting from list";
