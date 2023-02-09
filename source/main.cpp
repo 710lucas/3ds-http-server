@@ -21,6 +21,8 @@
 #include <3ds.h>
 #include "http_3ds_lib.h"
 #include "request_parser.h"
+#include "database.h"
+#include "hashing.h"
 
 template <typename T> bool vector_contains_value(std::vector<T> valid_ips, T ip){
 	return std::find(valid_ips.begin(), valid_ips.end(), ip) != valid_ips.end();
@@ -47,7 +49,7 @@ int main(int argc, char **argv) {
 	server.initSock();
 
 	std::string server_password;
-	std::fstream password_file("./website/password.txt");
+	std::fstream password_file("./website/password_server.txt");
 	while(password_file >> server_password){
 		;
 	}
@@ -185,10 +187,10 @@ int main(int argc, char **argv) {
 
 			}
 
-			else if(http_get(server.temp, "/login")){
+			else if(http_get(server.temp, "/login_add_page")){
 				send_default(200, "text/html", server.csock);
 				std::string login_page = ""
-				"<form action='/login' method='POST'>"
+				"<form action='/login_add_page' method='POST'>"
 				"<input type='password' name='password' placeholder='password'>"
 				"<input type='submit' value='submit'>"
 				"</form>"
@@ -196,7 +198,7 @@ int main(int argc, char **argv) {
 				send(server.csock, login_page.c_str(), strlen(login_page.c_str()), 0);
 			}
 
-			else if(http_post(server.temp, "/login")){
+			else if(http_post(server.temp, "/login_add_page")){
 				send_default(200, "text/html", server.csock);
 				BodyParser bp(server.temp);
 				std::string resp="";
@@ -211,12 +213,77 @@ int main(int argc, char **argv) {
 					valid_ips.push_back(ip);
 				}
 				else
-					std::string resp = "wrong password";
+					resp = "wrong password";
 
 				send(server.csock, resp.c_str(), strlen(resp.c_str()), 0);
 
 
 			}
+
+			else if(http_post(server.temp, "/register_user")){
+				Database db({"./website/users", "./website/pasword"});
+				BodyParser bp(server.temp);
+
+
+				std::string user = bp.get_value("username");
+				std::string password = bp.get_value("password");
+				user = simple_hash::hash_string(user);
+				password = simple_hash::hash_string(password);
+
+				if(!db.exists_in_database("./website/users", user)){
+					db.add_item("./website/users", user);
+					db.add_item("./website/password", password);
+					send_default(302, "/", server.csock);
+				}
+				else{
+					send_default(302, "/register_user?msg=usuario ja existe, use outro", server.csock);
+				}
+
+
+			}
+
+			else if(http_post(server.temp, "/login_user")){
+				//ADICIONAR TOKEN PQ EU TO SEM TEMPO
+				//E ADICIONAR PAGINA RESTRITA PARA TESTAR TOKEN
+				Database db({"./website/users", "./website/pasword"});
+				BodyParser bp(server.temp);
+
+				std::string user = bp.get_value("username");
+				std::string password = bp.get_value("password");
+				std::cout<<"PASSWORD: "<<password<<"\n\n\n\n\n\n";
+				user = simple_hash::hash_string(user);
+				password = simple_hash::hash_string(password);
+
+				int username_position = db.get_item_position("./website/users", user);
+				if(username_position != -1){
+					std::string password_in_db = db.get_item_in_position("./website/password", username_position);
+					if(password == password_in_db)
+						send_default(302, "/register_user?msg=LOGADO", server.csock);
+					else
+						send_default(302, "/register_user?msg=senha errada", server.csock);
+
+				}
+				else
+					send_default(302, "/register_user?msg=usuario não existe", server.csock);
+
+			}
+
+			else if(http_get(server.temp, "/get-cookies")){
+				send_default(200, "text/html", server.csock);
+				BodyParser bp(server.temp);
+				std::cout<<"girafa";
+				std::string cookies = bp.get_cookies();
+				std::cout<<"girafa";
+				send(server.csock, cookies.c_str(), strlen(cookies.c_str()), 0);
+			}
+
+			else if(http_get(server.temp, "/get-cookie-name")){
+				send_default(200, "text/html", server.csock);
+				BodyParser bp(server.temp);
+				std::string cookies = bp.get_cookie_value("name");
+				send(server.csock, cookies.c_str(), strlen(cookies.c_str()), 0);
+			}
+
 
 			else if(http_get_from_list(server.temp)){ //Still WIP
 				std::cout<<"Getting from list";

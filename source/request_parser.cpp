@@ -1,11 +1,16 @@
 #include "request_parser.h"
 
 
-BodyParser::BodyParser(std::string request){
+BodyParser::BodyParser(std::string request_){
+    request = request_;
     get_body(request);
+    parse_cookies();
 }
 
 std::string BodyParser::get_body(std::string request){
+
+    if(request.find("Content-Length: ") == std::string::npos)
+        return "";
 
     std::string content_length = "";
     int length;
@@ -176,4 +181,46 @@ std::string BodyParser::remove_string_codes(std::string value){
 
     return right_value;
 
+}
+
+
+void BodyParser::parse_cookies(){
+    size_t pos = request.find("Cookie: ");
+    std::cout<<"a";
+
+    int newlines = 0;
+    std::cout<<"a";
+
+    for(int i = pos+(std::string("Cookie: ").length()); i<request.length() and newlines<1 and pos != std::string::npos; i++){
+
+        if(request[i] == '\n')
+            newlines++;
+
+        else if(newlines == 0)
+            cookies+=request[i];
+    }
+    std::cout<<"a";
+
+}
+
+std::string BodyParser::get_cookie_value(std::string cookie_name){
+    size_t pos = cookies.find(cookie_name+"=");
+
+    std::string cookie_value="";
+    int semicolons = 0;
+
+    for(int i = pos+std::string(cookie_name+"=").size(); i<cookies.length() and semicolons < 1 and pos != std::string::npos; i++){
+        if(cookies[i] == ';')
+            semicolons++;
+        else if(semicolons == 0 or i == cookies.length()-1){
+            cookie_value += cookies[i];
+        }
+        
+    }
+
+    return cookie_value;
+}
+
+std::string BodyParser::get_cookies(){
+    return cookies;
 }
