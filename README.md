@@ -1,3 +1,5 @@
+# Abandonado por tempo indefinido!
+
 # 3ds http server
 
 This is a simple server that you can run in your 3ds
